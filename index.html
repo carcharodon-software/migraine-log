@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#161a17">
+<title>Migraine Log</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<style>
+/* Layout idea: one dim, low-glare column sized for a thumb. Home is a severity pad: one tap logs. */
+:root{
+  color-scheme:dark;
+  --bg:#161a17; --surface:#1f2420; --raise:#2a302b; --line:#363d37;
+  --text:#c5ccc1; --muted:#879082; --accent:#7fa98a; --accent-ink:#0f1410; --danger:#b3726a;
+  --font:"One UI Sans","Samsung Sans",Roboto,system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:16px;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--text);font:17px/1.45 var(--font);-webkit-tap-highlight-color:transparent}
+h1{font-size:28px;line-height:1.15;margin:0;font-weight:600;text-wrap:balance}
+h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:0;font-weight:600}
+p{margin:0}
+button,input,textarea,select{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
+main{flex:1;padding:20px 16px 24px;display:flex;flex-direction:column;gap:20px}
+.view{display:none;flex-direction:column;gap:20px}
+.view.on{display:flex}
+.muted{color:var(--muted)}
+.small{font-size:14.5px}
+.num{font-variant-numeric:tabular-nums}
+
+nav{position:sticky;bottom:0;display:flex;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav a{flex:1;text-align:center;padding:16px 4px;color:var(--muted);text-decoration:none;font-weight:600}
+nav a.on{color:var(--accent);box-shadow:inset 0 2px 0 var(--accent)}
+
+.pad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
+.pad button{min-height:76px;border-radius:var(--r);font-size:26px;font-weight:600;color:#e4e9df}
+.pad button:active{transform:scale(.96)}
+.scale{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:16px;display:flex;flex-direction:column;gap:10px}
+.btn{min-height:52px;padding:0 18px;border-radius:14px;background:var(--raise);border:1px solid var(--line);font-weight:600}
+.btn.primary{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.danger{color:var(--danger)}
+.btn.block{width:100%}
+.row{display:flex;gap:10px;flex-wrap:wrap}
+.row > .btn{flex:1}
+
+.saved{align-items:flex-start;gap:14px;padding:20px}
+.saved .big{font-size:24px;font-weight:600;color:#dfe5da}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;border-radius:12px;font-weight:700;font-size:19px;color:#e4e9df;flex:none}
+
+.entry{display:flex;gap:14px;align-items:flex-start;text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.entry .body{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
+.entry .when{font-weight:600;color:#dfe5da}
+.entry .note{overflow-wrap:anywhere}
+.list{display:flex;flex-direction:column;gap:8px}
+.stats{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
+.stat b{display:block;font-size:26px;color:#dfe5da;font-weight:600}
+
+.sheet{position:fixed;inset:0;background:var(--bg);overflow-y:auto;display:none;z-index:5}
+.sheet.on{display:block}
+.sheet .inner{max-width:520px;margin:0 auto;padding:20px 16px 40px;display:flex;flex-direction:column;gap:20px}
+.field{display:flex;flex-direction:column;gap:8px}
+label,.label{font-size:14.5px;color:var(--muted);font-weight:600}
+input[type=text],input[type=datetime-local],input[type=search],textarea{width:100%;min-height:52px;padding:12px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+textarea{min-height:110px;resize:vertical}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:0 14px;border-radius:22px;background:var(--surface);border:1px solid var(--line);color:var(--muted)}
+.chip[aria-pressed=true]{background:var(--raise);border-color:var(--accent);color:var(--accent)}
+.mini{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
+.mini button{height:46px;border-radius:10px;font-weight:600;color:#e4e9df;opacity:.45}
+.mini button[aria-pressed=true]{opacity:1;box-shadow:0 0 0 2px var(--text)}
+.seg{display:flex;gap:8px}
+.seg .chip{flex:1}
+.hide{display:none!important}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.pad button:active{transform:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<main>
+
+<section class="view" id="v-log">
+  <div id="ask" style="display:flex;flex-direction:column;gap:16px">
+    <div style="display:flex;flex-direction:column;gap:6px">
+      <h1>How bad is it?</h1>
+      <p class="muted">Tap a number. The time and weather save themselves.</p>
+    </div>
+    <div class="pad" id="pad"></div>
+    <div class="scale"><span>1 mild</span><span>10 worst</span></div>
+  </div>
+
+  <div class="card saved hide" id="saved" aria-live="polite">
+    <div style="display:flex;gap:14px;align-items:center">
+      <span class="badge" id="savedBadge"></span>
+      <div><div class="big">Saved</div><div class="muted num" id="savedWhen"></div></div>
+    </div>
+    <p id="savedWx" class="num"></p>
+    <div class="row" style="width:100%">
+      <button class="btn primary" id="savedDone">Done</button>
+      <button class="btn" id="savedMore">Add details</button>
+    </div>
+    <button class="btn danger block" id="savedUndo">Undo, that was a mistake</button>
+  </div>
+
+  <div class="card hide" id="setupCard">
+    <p><strong>One-time setup.</strong> Allow location so each entry can save the weather where you are.</p>
+    <button class="btn primary" id="setupLoc">Turn on location</button>
+    <p class="small muted">Or set a home town under Setup.</p>
+  </div>
+
+  <div class="card" id="nowCard">
+    <h2>Weather right now</h2>
+    <p class="num" id="nowWx">Waiting for a location.</p>
+  </div>
+
+  <button class="btn block" id="logEarlier">Log an earlier migraine</button>
+</section>
+
+<section class="view" id="v-history">
+  <h1>History</h1>
+  <div class="stats" id="stats"></div>
+  <div class="card" id="pattern"></div>
+  <div class="list" id="list"></div>
+</section>
+
+<section class="view" id="v-setup">
+  <h1>Setup</h1>
+  <div class="card">
+    <h2>Location for weather</h2>
+    <p id="locStatus" class="small"></p>
+    <button class="btn" id="locBtn">Use this phone's location</button>
+    <div class="field">
+      <label for="town">Home town, used when the phone can't find you</label>
+      <div class="row"><input type="search" id="town" placeholder="City name" style="flex:2;min-width:0"><button class="btn" id="townGo" style="flex:1">Search</button></div>
+      <div class="list" id="townResults"></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Units</h2>
+    <div class="seg" id="units">
+      <button class="chip" data-u="us">°F and inHg</button>
+      <button class="chip" data-u="metric">°C and hPa</button>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Your data</h2>
+    <p class="small muted">Entries are stored only on this phone. Save a backup now and then, and export a spreadsheet to bring to the doctor.</p>
+    <button class="btn" id="csv">Export spreadsheet (CSV)</button>
+    <button class="btn" id="backup">Save a backup file</button>
+    <button class="btn" id="restore">Restore from a backup file</button>
+    <input type="file" id="restoreFile" accept="application/json,.json" class="hide">
+    <p class="small" id="dataMsg" aria-live="polite"></p>
+  </div>
+</section>
+
+</main>
+<nav>
+  <a href="#log" data-v="log">Log</a>
+  <a href="#history" data-v="history">History</a>
+  <a href="#setup" data-v="setup">Setup</a>
+</nav>
+</div>
+
+<div class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle">
+  <div class="inner">
+    <h1 id="sheetTitle">Migraine details</h1>
+    <div class="field"><label for="fStart">Started</label><input type="datetime-local" id="fStart"></div>
+    <div class="field"><label for="fEnd">Ended (leave empty if it is still going)</label>
+      <div class="row"><input type="datetime-local" id="fEnd" style="flex:2;min-width:0"><button class="btn" id="fEndNow" style="flex:1">Just now</button></div></div>
+    <div class="field"><span class="label">Severity</span><div class="mini" id="fSev"></div></div>
+    <div class="field"><span class="label">Symptoms</span><div class="chips" id="fSym"></div></div>
+    <div class="field"><span class="label">Possible triggers</span><div class="chips" id="fTrig"></div></div>
+    <div class="field"><label for="fMed">Medicine taken</label><input type="text" id="fMed" placeholder="What and when"></div>
+    <div class="field"><label for="fNotes">Notes</label><textarea id="fNotes"></textarea></div>
+    <div class="card"><h2>Weather when it started</h2><p class="num" id="fWx"></p><button class="btn" id="fWxGo">Get weather again</button></div>
+    <div class="row"><button class="btn primary" id="fSave">Save</button><button class="btn" id="fCancel">Cancel</button></div>
+    <button class="btn danger block" id="fDel">Delete this entry</button>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const KEY = 'migraine-log-v1';
+const SYMPTOMS = ['Aura','Nausea','Light hurts','Sound hurts','Dizzy','Neck pain','Left side','Right side','Behind eyes'];
+const TRIGGERS = ['Weather change','Poor sleep','Stress','Skipped meal','Dehydrated','Screens','Alcohol','Hormonal','Strong smell'];
+const DAY = 864e5;
+
+let S = {entries:[], units:'us', home:null, lastLoc:null, gps:false};
+try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch {}
+function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
+
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const sevColor = n => `hsl(${140 - (n-1)*15} 30% 33%)`;
+const fmtWhen = t => new Date(t).toLocaleString([], {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
+const toInput = t => t ? new Date(t - new Date(t).getTimezoneOffset()*6e4).toISOString().slice(0,16) : '';
+const fromInput = v => v ? new Date(v).getTime() : null;
+
+/* ---------- weather ---------- */
+const SKY = c => c==null ? '' : c===0 ? 'Clear' : c<=2 ? 'Partly cloudy' : c===3 ? 'Overcast' : c<=48 ? 'Fog' : c<=57 ? 'Drizzle' :
+  c<=67 ? 'Rain' : c<=77 ? 'Snow' : c<=82 ? 'Showers' : c<=86 ? 'Snow showers' : 'Thunderstorm';
+const fmtT = c => S.units==='us' ? Math.round(c*9/5+32)+'°F' : Math.round(c)+'°C';
+const fmtP = h => S.units==='us' ? (h*0.02953).toFixed(2)+' inHg' : Math.round(h)+' hPa';
+const fmtD = h => S.units==='us' ? (Math.abs(h)*0.02953).toFixed(2)+' inHg' : Math.abs(h).toFixed(1)+' hPa';
+function trend(d, span){
+  if (d==null) return '';
+  if (Math.abs(d) < 1) return `steady over ${span}`;
+  return `${d>0 ? '↑ up' : '↓ down'} ${fmtD(d)} in ${span}`;
+}
+function wxLine(w){
+  const t24 = trend(w.d24,'24 h');
+  return `${fmtT(w.t)} · ${w.h}% humidity · ${fmtP(w.p)}${t24 ? ' ('+t24+')' : ''}${w.code!=null ? ' · '+SKY(w.code) : ''}`;
+}
+
+async function getWeather(lat, lon, t){
+  const d = x => new Date(x).toISOString().slice(0,10);
+  const host = Date.now()-t > 80*DAY ? 'https://archive-api.open-meteo.com/v1/archive' : 'https://api.open-meteo.com/v1/forecast';
+  const url = `${host}?latitude=${lat}&longitude=${lon}&hourly=temperature_2m,relative_humidity_2m,pressure_msl,weather_code`+
+    `&start_date=${d(t-DAY-36e5)}&end_date=${d(t+36e5)}&timeformat=unixtime&timezone=UTC`;
+  const r = await fetch(url);
+  if (!r.ok) throw new Error('weather '+r.status);
+  const H = (await r.json()).hourly;
+  const at = ms => {
+    let best=-1, gap=Infinity;
+    H.time.forEach((s,i) => { const g=Math.abs(s*1000-ms); if (g<gap && H.pressure_msl[i]!=null){gap=g;best=i;} });
+    return gap <= 5400e3 ? best : -1;
+  };
+  const i = at(t); if (i<0) throw new Error('no data for that time');
+  const i24 = at(t-DAY), i3 = at(t-3*36e5), r1 = x => Math.round(x*10)/10;
+  return { t:H.temperature_2m[i], h:Math.round(H.relative_humidity_2m[i]), p:r1(H.pressure_msl[i]), code:H.weather_code[i],
+    d24: i24<0 ? null : r1(H.pressure_msl[i]-H.pressure_msl[i24]), d3: i3<0 ? null : r1(H.pressure_msl[i]-H.pressure_msl[i3]) };
+}
+
+function gpsOnce(){
+  return new Promise(res => {
+    if (!navigator.geolocation) return res(null);
+    navigator.geolocation.getCurrentPosition(
+      p => res({lat:+p.coords.latitude.toFixed(2), lon:+p.coords.longitude.toFixed(2)}),
+      () => res(null), {timeout:8000, maximumAge:6e5});
+  });
+}
+async function locate(){
+  if (S.gps) { const l = await gpsOnce(); if (l) { S.lastLoc = l; save(); return l; } }
+  return S.home || S.lastLoc || null;
+}
+async function attachWeather(e){
+  if (!e.loc) { e.loc = await locate(); if (!e.loc) return false; }
+  try { e.wx = await getWeather(e.loc.lat, e.loc.lon, e.start); save(); return true; }
+  catch { save(); return false; }
+}
+async function fillMissing(){
+  if (!navigator.onLine) return;
+  let any = false;
+  for (const e of S.entries.filter(e => !e.wx).slice(0,10)) any = await attachWeather(e) || any;
+  if (any) renderHistory();
+}
+async function showNow(){
+  const l = S.home || S.lastLoc;
+  $('#setupCard').classList.toggle('hide', !!(S.gps || S.home));
+  if (!l) { $('#nowWx').textContent = 'Waiting for a location.'; return; }
+  try { $('#nowWx').textContent = wxLine(await getWeather(l.lat, l.lon, Date.now())); }
+  catch { $('#nowWx').textContent = 'Could not reach the weather service. Entries still save, and weather fills in later.'; }
+}
+
+/* ---------- log ---------- */
+let lastId = null;
+const byId = id => S.entries.find(e => e.id===id);
+function newEntry(start, sev){
+  const e = {id:Date.now().toString(36), start, end:null, sev, symptoms:[], triggers:[], med:'', notes:'', loc:null, wx:null};
+  S.entries.push(e); save(); return e;
+}
+function showSaved(e, pending){
+  $('#ask').classList.add('hide'); $('#saved').classList.remove('hide');
+  $('#savedBadge').textContent = e.sev; $('#savedBadge').style.background = sevColor(e.sev);
+  $('#savedWhen').textContent = fmtWhen(e.start);
+  $('#savedWx').textContent = pending ? 'Getting the weather…' : e.wx ? wxLine(e.wx) :
+    'No weather yet. It fills in by itself once the phone is online and has a location.';
+}
+function closeSaved(){ lastId=null; $('#saved').classList.add('hide'); $('#ask').classList.remove('hide'); }
+$('#pad').innerHTML = Array.from({length:10},(_,i)=>`<button data-s="${i+1}" style="background:${sevColor(i+1)}" aria-label="Severity ${i+1}">${i+1}</button>`).join('');
+$('#pad').onclick = ev => {
+  const b = ev.target.closest('button'); if (!b) return;
+  const e = newEntry(Date.now(), +b.dataset.s); lastId = e.id;
+  showSaved(e, true);
+  attachWeather(e).then(() => { if (lastId===e.id) showSaved(e, false); });
+};
+$('#savedDone').onclick = closeSaved;
+$('#savedUndo').onclick = () => { S.entries = S.entries.filter(e => e.id!==lastId); save(); closeSaved(); };
+$('#savedMore').onclick = () => { const id=lastId; closeSaved(); openEditor(id); };
+$('#logEarlier').onclick = () => openEditor(null);
+$('#setupLoc').onclick = enableGps;
+async function enableGps(){
+  const l = await gpsOnce();
+  if (l) { S.gps = true; S.lastLoc = l; save(); fillMissing(); }
+  renderSetup(l ? '' : 'The phone did not share its location. Check that location is on and allowed for this page, or set a home town below.');
+  showNow();
+  if (!l) location.hash = 'setup';
+}
+
+/* ---------- editor ---------- */
+let ed = null;
+function chips(el, all, picked){
+  el.innerHTML = all.map(x => `<button class="chip" aria-pressed="${picked.includes(x)}">${esc(x)}</button>`).join('');
+}
+function openEditor(id){
+  const e = id ? byId(id) : null;
+  ed = {id, sev: e ? e.sev : 5, wx: e ? e.wx : null, start0: e ? e.start : null};
+  $('#sheetTitle').textContent = e ? 'Migraine details' : 'Log an earlier migraine';
+  $('#fStart').value = toInput(e ? e.start : Date.now());
+  $('#fEnd').value = toInput(e && e.end);
+  $('#fSev').innerHTML = Array.from({length:10},(_,i)=>`<button data-s="${i+1}" style="background:${sevColor(i+1)}" aria-pressed="${i+1===ed.sev}" aria-label="Severity ${i+1}">${i+1}</button>`).join('');
+  chips($('#fSym'), SYMPTOMS, e ? e.symptoms : []);
+  chips($('#fTrig'), TRIGGERS, e ? e.triggers : []);
+  $('#fMed').value = e ? e.med : ''; $('#fNotes').value = e ? e.notes : '';
+  $('#fWx').textContent = ed.wx ? wxLine(ed.wx) : e ? 'Not saved yet.' : 'Saved when you tap Save.';
+  $('#fWxGo').classList.toggle('hide', !e); $('#fDel').classList.toggle('hide', !e);
+  $('#fDel').textContent = 'Delete this entry'; delete $('#fDel').dataset.sure;
+  $('#sheet').classList.add('on'); $('#sheet').scrollTop = 0;
+}
+function closeEditor(){ $('#sheet').classList.remove('on'); ed = null; renderHistory(); }
+$('#fSev').onclick = ev => { const b = ev.target.closest('button'); if (!b) return; ed.sev = +b.dataset.s;
+  $('#fSev').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x===b)); };
+for (const id of ['#fSym','#fTrig']) $(id).onclick = ev => { const b = ev.target.closest('.chip'); if (b) b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')!=='true'); };
+const picked = el => [...el.querySelectorAll('[aria-pressed=true]')].map(b => b.textContent);
+$('#fEndNow').onclick = () => { $('#fEnd').value = toInput(Date.now()); };
+$('#fCancel').onclick = closeEditor;
+$('#fSave').onclick = () => {
+  const start = fromInput($('#fStart').value) || Date.now();
+  const e = ed.id ? byId(ed.id) : newEntry(start, ed.sev);
+  const moved = ed.start0!=null && Math.abs(start-ed.start0) > 30*6e4;
+  Object.assign(e, {start, end:fromInput($('#fEnd').value), sev:ed.sev, symptoms:picked($('#fSym')), triggers:picked($('#fTrig')),
+    med:$('#fMed').value.trim(), notes:$('#fNotes').value.trim()});
+  if (moved) e.wx = null;
+  save(); closeEditor();
+  if (!e.wx) attachWeather(e).then(renderHistory);
+};
+$('#fWxGo').onclick = async () => {
+  const e = byId(ed.id); if (!e) return;
+  $('#fWx').textContent = 'Getting the weather…';
+  const start = fromInput($('#fStart').value) || e.start;
+  const probe = {start, loc:e.loc, wx:null};
+  const ok = await attachWeather(probe);
+  if (!ed || ed.id!==e.id) return;
+  if (ok) { e.wx = probe.wx; e.loc = probe.loc; e.start = start; ed.start0 = start; save(); }
+  $('#fWx').textContent = ok ? wxLine(e.wx) : 'Could not get weather. Check the connection and that a location is set under Setup.';
+};
+$('#fDel').onclick = () => {
+  const b = $('#fDel');
+  if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again to delete for good'; return; }
+  S.entries = S.entries.filter(e => e.id!==ed.id); save(); closeEditor();
+};
+
+/* ---------- history ---------- */
+function renderHistory(){
+  const es = [...S.entries].sort((a,b) => b.start-a.start);
+  const recent = es.filter(e => Date.now()-e.start < 30*DAY);
+  const avg = recent.length ? (recent.reduce((s,e) => s+e.sev, 0)/recent.length).toFixed(1) : '–';
+  $('#stats').innerHTML = `<div class="stat num"><b>${recent.length}</b><span class="muted small">in the last 30 days</span></div>
+    <div class="stat num"><b>${avg}</b><span class="muted small">average severity</span></div>`;
+  const w = es.filter(e => e.wx && e.wx.d24!=null);
+  const fell = w.filter(e => e.wx.d24 <= -3).length, rose = w.filter(e => e.wx.d24 >= 3).length;
+  $('#pattern').innerHTML = `<h2>Air pressure in the 24 hours before</h2>` + (w.length
+    ? `<p class="num">Falling before <strong>${fell}</strong>, rising before <strong>${rose}</strong>, steady before <strong>${w.length-fell-rose}</strong> of ${w.length} migraines.</p>
+       <p class="small muted">Falling or rising means a change of more than ${fmtD(3)}.</p>`
+    : `<p class="muted">This fills in once a few entries have weather saved.</p>`);
+  $('#list').innerHTML = es.length ? es.map(e => {
+    const dur = e.end && e.end>e.start ? ` · lasted ${((e.end-e.start)/36e5).toFixed(1).replace('.0','')} h` : '';
+    const tags = [...e.symptoms, ...e.triggers].join(', ');
+    return `<button class="entry" data-id="${e.id}"><span class="badge" style="background:${sevColor(e.sev)}">${e.sev}</span>
+      <span class="body"><span class="when num">${esc(fmtWhen(e.start))}${dur}</span>
+      <span class="small num ${e.wx?'':'muted'}">${e.wx ? esc(wxLine(e.wx)) : 'Weather not saved yet'}</span>
+      ${tags ? `<span class="small muted">${esc(tags)}</span>` : ''}
+      ${e.med ? `<span class="small muted">Took: ${esc(e.med)}</span>` : ''}
+      ${e.notes ? `<span class="small note">${esc(e.notes)}</span>` : ''}</span></button>`;
+  }).join('') : `<p class="muted">Nothing logged yet. Entries show up here, newest first. Tap one to add details.</p>`;
+}
+$('#list').onclick = ev => { const b = ev.target.closest('.entry'); if (b) openEditor(b.dataset.id); };
+
+/* ---------- setup ---------- */
+function renderSetup(msg){
+  $('#locStatus').textContent = msg || (S.gps ? "Using this phone's location" + (S.home ? `, with ${S.home.name} as the fallback.` : '.')
+    : S.home ? `Using ${S.home.name}.` : 'No location set yet, so weather cannot be saved.');
+  $('#locBtn').textContent = S.gps ? "Stop using this phone's location" : "Use this phone's location";
+  $('#units').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.u===S.units));
+}
+$('#locBtn').onclick = () => { if (S.gps) { S.gps = false; save(); renderSetup(); showNow(); } else enableGps(); };
+$('#units').onclick = ev => { const b = ev.target.closest('.chip'); if (!b) return; S.units = b.dataset.u; save(); renderSetup(); renderHistory(); showNow(); };
+async function townSearch(){
+  const q = $('#town').value.trim(), out = $('#townResults'); if (!q) return;
+  out.innerHTML = '<p class="muted small">Searching…</p>';
+  try {
+    const j = await (await fetch(`https://geocoding-api.open-meteo.com/v1/search?count=5&name=${encodeURIComponent(q)}`)).json();
+    const rs = j.results || [];
+    out.innerHTML = rs.length ? rs.map((r,i) => `<button class="btn" data-i="${i}" style="text-align:left">${esc([r.name,r.admin1,r.country].filter(Boolean).join(', '))}</button>`).join('')
+      : '<p class="small">No town found with that name. Try a nearby larger city.</p>';
+    out.onclick = ev => { const b = ev.target.closest('button'); if (!b) return; const r = rs[b.dataset.i];
+      S.home = {lat:+r.latitude.toFixed(2), lon:+r.longitude.toFixed(2), name:[r.name,r.admin1].filter(Boolean).join(', ')};
+      save(); out.innerHTML = ''; $('#town').value = ''; renderSetup(); showNow(); fillMissing(); };
+  } catch { out.innerHTML = '<p class="small">Could not search. Check the internet connection and try again.</p>'; }
+}
+$('#townGo').onclick = townSearch;
+$('#town').onkeydown = ev => { if (ev.key==='Enter') townSearch(); };
+
+function download(name, text, type){
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([text], {type})); a.download = name;
+  document.body.appendChild(a); a.click(); a.remove();
+}
+const stamp = () => toInput(Date.now()).slice(0,10);
+$('#csv').onclick = () => {
+  const q = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
+  const us = S.units==='us', pu = us ? 'inHg' : 'hPa', pc = h => h==null ? '' : us ? (h*0.02953).toFixed(2) : h;
+  const rows = [['Started','Ended','Hours','Severity','Symptoms','Triggers','Medicine','Notes',`Temp ${us?'F':'C'}`,'Humidity %',`Pressure ${pu}`,`Pressure change 24h ${pu}`,`Pressure change 3h ${pu}`,'Sky']];
+  for (const e of [...S.entries].sort((a,b) => a.start-b.start)) { const w = e.wx || {};
+    rows.push([toInput(e.start).replace('T',' '), toInput(e.end).replace('T',' '), e.end ? ((e.end-e.start)/36e5).toFixed(1) : '', e.sev,
+      e.symptoms.join('; '), e.triggers.join('; '), e.med, e.notes, w.t==null ? '' : us ? Math.round(w.t*9/5+32) : w.t, w.h, pc(w.p), pc(w.d24), pc(w.d3), SKY(w.code)]); }
+  download(`migraine-log-${stamp()}.csv`, rows.map(r => r.map(q).join(',')).join('\r\n'), 'text/csv');
+  $('#dataMsg').textContent = `Exported ${S.entries.length} entries.`;
+};
+$('#backup').onclick = () => { download(`migraine-backup-${stamp()}.json`, JSON.stringify(S), 'application/json'); $('#dataMsg').textContent = 'Backup saved to Downloads.'; };
+$('#restore').onclick = () => $('#restoreFile').click();
+$('#restoreFile').onchange = async ev => {
+  const f = ev.target.files[0]; if (!f) return;
+  try {
+    const d = JSON.parse(await f.text());
+    if (!Array.isArray(d.entries)) throw 0;
+    const have = new Set(S.entries.map(e => e.id));
+    const add = d.entries.filter(e => e && e.id && e.start && !have.has(e.id));
+    S.entries.push(...add); if (!S.home && d.home) S.home = d.home; save();
+    $('#dataMsg').textContent = `Added ${add.length} entries from the backup.`; renderHistory();
+  } catch { $('#dataMsg').textContent = 'That file is not a Migraine Log backup.'; }
+  ev.target.value = '';
+};
+
+/* ---------- routing ---------- */
+function route(){
+  const v = ['log','history','setup'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'log';
+  document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id==='v-'+v));
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.dataset.v===v));
+  if (v==='history') renderHistory(); if (v==='setup') renderSetup();
+  scrollTo(0,0);
+}
+addEventListener('hashchange', route);
+addEventListener('online', fillMissing);
+route(); showNow(); fillMissing();
+if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
+if ('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
+</script>
+</body>
+</html>
