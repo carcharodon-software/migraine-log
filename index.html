@@ -24,6 +24,7 @@ h2{font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 p{margin:0}
 button,input,textarea,select{font:inherit;color:inherit}
 button{cursor:pointer;border:0;background:none}
+button:disabled{cursor:default}
 :focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .app{max-width:520px;margin:0 auto;min-height:100%;display:flex;flex-direction:column}
 main{flex:1;padding:20px 16px 24px;display:flex;flex-direction:column;gap:20px}
@@ -34,11 +35,11 @@ main{flex:1;padding:20px 16px 24px;display:flex;flex-direction:column;gap:20px}
 .num{font-variant-numeric:tabular-nums}
 
 nav{position:sticky;bottom:0;display:flex;background:var(--surface);border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
-nav a{flex:1;text-align:center;padding:16px 4px;color:var(--muted);text-decoration:none;font-weight:600}
+nav a{flex:1;text-align:center;padding:16px 2px;color:var(--muted);text-decoration:none;font-weight:600;font-size:16px}
 nav a.on{color:var(--accent);box-shadow:inset 0 2px 0 var(--accent)}
 
 .pad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px}
-.pad button{min-height:76px;border-radius:var(--r);font-size:26px;font-weight:600;color:#e4e9df}
+.pad button{min-height:76px;border-radius:var(--r);font-size:26px;font-weight:600;color:#eef1ea;text-shadow:0 1px 2px rgba(0,0,0,.35)}
 .pad button:active{transform:scale(.96)}
 .scale{display:flex;justify-content:space-between;font-size:14px;color:var(--muted)}
 
@@ -52,7 +53,7 @@ nav a.on{color:var(--accent);box-shadow:inset 0 2px 0 var(--accent)}
 
 .saved{align-items:flex-start;gap:14px;padding:20px}
 .saved .big{font-size:24px;font-weight:600;color:#dfe5da}
-.badge{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;border-radius:12px;font-weight:700;font-size:19px;color:#e4e9df;flex:none}
+.badge{display:inline-flex;align-items:center;justify-content:center;min-width:44px;height:44px;border-radius:12px;font-weight:700;font-size:19px;color:#eef1ea;text-shadow:0 1px 2px rgba(0,0,0,.35);flex:none}
 
 .entry{display:flex;gap:14px;align-items:flex-start;text-align:left;width:100%;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
 .entry .body{display:flex;flex-direction:column;gap:4px;min-width:0;flex:1}
@@ -63,8 +64,28 @@ nav a.on{color:var(--accent);box-shadow:inset 0 2px 0 var(--accent)}
 .stat{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:14px}
 .stat b{display:block;font-size:26px;color:#dfe5da;font-weight:600}
 
+/* calendar */
+.calhead{display:flex;align-items:center;gap:8px}
+.calhead h1{flex:1;text-align:center;font-size:24px}
+.calhead .btn{min-width:52px;padding:0;font-size:22px}
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:4px}
+.cal .dow{text-align:center;font-size:13px;color:var(--muted);font-weight:600;padding-bottom:2px}
+.day{aspect-ratio:1/1.12;border-radius:12px;background:var(--surface);border:1px solid transparent;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:5px;padding-top:7px;font-weight:600;font-variant-numeric:tabular-nums}
+.day.blank{background:none}
+.day:disabled{opacity:.35}
+.day.today{border-color:var(--muted)}
+.day.sel{border-color:var(--accent);background:var(--raise)}
+.dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;padding:0 3px}
+.dot{width:10px;height:10px;border-radius:50%}
+.more{font-size:11px;line-height:10px;color:var(--muted)}
+.legend{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--muted)}
+.strip{display:flex;flex:1;height:12px;border-radius:6px;overflow:hidden}
+.strip span{flex:1}
+
+/* sheets */
 .sheet{position:fixed;inset:0;background:var(--bg);overflow-y:auto;display:none;z-index:5}
 .sheet.on{display:block}
+#manage{z-index:6}
 .sheet .inner{max-width:520px;margin:0 auto;padding:20px 16px 40px;display:flex;flex-direction:column;gap:20px}
 .field{display:flex;flex-direction:column;gap:8px}
 label,.label{font-size:14.5px;color:var(--muted);font-weight:600}
@@ -74,10 +95,28 @@ textarea{min-height:110px;resize:vertical}
 .chip{min-height:44px;padding:0 14px;border-radius:22px;background:var(--surface);border:1px solid var(--line);color:var(--muted)}
 .chip[aria-pressed=true]{background:var(--raise);border-color:var(--accent);color:var(--accent)}
 .mini{display:grid;grid-template-columns:repeat(10,1fr);gap:4px}
-.mini button{height:46px;border-radius:10px;font-weight:600;color:#e4e9df;opacity:.45}
+.mini button{height:46px;border-radius:10px;font-weight:600;color:#eef1ea;opacity:.45}
 .mini button[aria-pressed=true]{opacity:1;box-shadow:0 0 0 2px var(--text)}
 .seg{display:flex;gap:8px}
 .seg .chip{flex:1}
+
+/* settings */
+.palettes{display:flex;flex-direction:column;gap:8px}
+.pal{display:flex;flex-direction:column;gap:8px;text-align:left;padding:12px 14px;border-radius:14px;background:var(--raise);border:1px solid var(--line)}
+.pal[aria-pressed=true]{border-color:var(--accent);box-shadow:inset 0 0 0 1px var(--accent)}
+.pal .name{display:flex;justify-content:space-between;font-weight:600}
+.pal .check{color:var(--accent)}
+.pal .strip{height:22px;border-radius:7px;flex:none}
+.navbtn{display:flex;justify-content:space-between;align-items:center;text-align:left}
+.navbtn .count{color:var(--muted);font-weight:400;font-size:14.5px}
+.mitem{display:flex;align-items:center;gap:8px;padding:6px 6px 6px 14px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.mitem .nm{flex:1;min-width:0;overflow-wrap:anywhere}
+.mitem.off .nm{color:var(--muted);text-decoration:line-through}
+.mitem .btn{min-height:44px;padding:0 12px;font-size:15px}
+.tog{min-width:92px}
+.tog[aria-pressed=true]{color:var(--accent)}
+.tag{font-size:12px;color:var(--muted);border:1px solid var(--line);border-radius:6px;padding:0 5px;margin-left:6px;font-weight:600;white-space:nowrap}
+
 .hide{display:none!important}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}.pad button:active{transform:none}}
 </style>
@@ -112,7 +151,7 @@ textarea{min-height:110px;resize:vertical}
   <div class="card hide" id="setupCard">
     <p><strong>One-time setup.</strong> Allow location so each entry can save the weather where you are.</p>
     <button class="btn primary" id="setupLoc">Turn on location</button>
-    <p class="small muted">Or set a home town under Setup.</p>
+    <p class="small muted">Or set a home town under Settings.</p>
   </div>
 
   <div class="card" id="nowCard">
@@ -123,6 +162,20 @@ textarea{min-height:110px;resize:vertical}
   <button class="btn block" id="logEarlier">Log an earlier migraine</button>
 </section>
 
+<section class="view" id="v-calendar">
+  <div class="calhead">
+    <button class="btn" id="calPrev" aria-label="Previous month">‹</button>
+    <h1 id="calTitle"></h1>
+    <button class="btn" id="calNext" aria-label="Next month">›</button>
+  </div>
+  <div>
+    <div class="cal" id="cal"></div>
+  </div>
+  <div class="legend"><span>1</span><div class="strip" id="calLegend"></div><span>10</span></div>
+  <p class="num muted small" id="calSummary"></p>
+  <div class="card" id="dayPanel"></div>
+</section>
+
 <section class="view" id="v-history">
   <h1>History</h1>
   <div class="stats" id="stats"></div>
@@ -130,8 +183,18 @@ textarea{min-height:110px;resize:vertical}
   <div class="list" id="list"></div>
 </section>
 
-<section class="view" id="v-setup">
-  <h1>Setup</h1>
+<section class="view" id="v-settings">
+  <h1>Settings</h1>
+  <div class="card">
+    <h2>Severity colors</h2>
+    <p class="small muted">Changes how severity looks everywhere. Your entries stay the same.</p>
+    <div class="palettes" id="palettes"></div>
+  </div>
+  <div class="card">
+    <h2>Pickers</h2>
+    <p class="small muted">Add your own items, or hide ones you rarely have so the lists stay short.</p>
+    <div class="list" id="manageBtns"></div>
+  </div>
   <div class="card">
     <h2>Location for weather</h2>
     <p id="locStatus" class="small"></p>
@@ -163,8 +226,9 @@ textarea{min-height:110px;resize:vertical}
 </main>
 <nav>
   <a href="#log" data-v="log">Log</a>
+  <a href="#calendar" data-v="calendar">Calendar</a>
   <a href="#history" data-v="history">History</a>
-  <a href="#setup" data-v="setup">Setup</a>
+  <a href="#settings" data-v="settings">Settings</a>
 </nav>
 </div>
 
@@ -175,8 +239,10 @@ textarea{min-height:110px;resize:vertical}
     <div class="field"><label for="fEnd">Ended (leave empty if it is still going)</label>
       <div class="row"><input type="datetime-local" id="fEnd" style="flex:2;min-width:0"><button class="btn" id="fEndNow" style="flex:1">Just now</button></div></div>
     <div class="field"><span class="label">Severity</span><div class="mini" id="fSev"></div></div>
+    <div class="field"><span class="label">Pre-migraine symptoms</span><div class="chips" id="fPre"></div></div>
     <div class="field"><span class="label">Symptoms</span><div class="chips" id="fSym"></div></div>
     <div class="field"><span class="label">Possible triggers</span><div class="chips" id="fTrig"></div></div>
+    <p class="small muted">Change these lists in Settings.</p>
     <div class="field"><label for="fMed">Medicine taken</label><input type="text" id="fMed" placeholder="What and when"></div>
     <div class="field"><label for="fNotes">Notes</label><textarea id="fNotes"></textarea></div>
     <div class="card"><h2>Weather when it started</h2><p class="num" id="fWx"></p><button class="btn" id="fWxGo">Get weather again</button></div>
@@ -185,22 +251,69 @@ textarea{min-height:110px;resize:vertical}
   </div>
 </div>
 
+<div class="sheet" id="manage" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+  <div class="inner">
+    <h1 id="mTitle"></h1>
+    <div class="field">
+      <label for="mNew" id="mNewLabel"></label>
+      <div class="row"><input type="text" id="mNew" style="flex:2;min-width:0" maxlength="40"><button class="btn" id="mAdd" style="flex:1">Add</button></div>
+      <p class="small" id="mMsg" aria-live="polite"></p>
+    </div>
+    <div class="list" id="mList"></div>
+    <p class="small muted">Hidden items stay on past entries that used them. They just stop showing on the picker.</p>
+    <button class="btn primary block" id="mDone">Done</button>
+  </div>
+</div>
+
 <script>
 const $ = s => document.querySelector(s);
 const KEY = 'migraine-log-v1';
-const SYMPTOMS = ['Aura','Nausea','Light hurts','Sound hurts','Dizzy','Neck pain','Left side','Right side','Behind eyes'];
-const TRIGGERS = ['Weather change','Poor sleep','Stress','Skipped meal','Dehydrated','Screens','Alcohol','Hormonal','Strong smell'];
 const DAY = 864e5;
+const DEFAULTS = {
+  pre: ['Mood swings','Euphoria','Irritable','Altered vision','Yawning a lot','Food cravings','Tired','Trouble focusing','Stiff neck','Trouble finding words'],
+  sym: ['Aura','Nausea','Light hurts','Sound hurts','Dizzy','Neck pain','Left side','Right side','Behind eyes'],
+  trig:['Weather change','Poor sleep','Stress','Skipped meal','Dehydrated','Screens','Alcohol','Hormonal','Strong smell']
+};
+const KINDS = {
+  pre: {title:'Pre-migraine symptoms', one:'pre-migraine symptom', field:'pre'},
+  sym: {title:'Symptoms', one:'symptom', field:'symptoms'},
+  trig:{title:'Possible triggers', one:'trigger', field:'triggers'}
+};
+// Severity color scales: [hue, saturation, lightness] for 1 and for 10, blended in between.
+const PALETTES = {
+  calm:   {name:'Calm',          a:[140,30,33], b:[5,30,33]},
+  traffic:{name:'Traffic light', a:[125,48,30], b:[0,58,38]},
+  ember:  {name:'Ember',         a:[46,48,34],  b:[-5,52,32]},
+  ocean:  {name:'Ocean',         a:[185,34,38], b:[228,52,26]},
+  dusk:   {name:'Dusk',          a:[175,30,33], b:[320,38,33]},
+  grey:   {name:'Greyscale',     a:[0,0,44],    b:[0,0,17]}
+};
 
-let S = {entries:[], units:'us', home:null, lastLoc:null, gps:false};
+let S = {entries:[], units:'us', home:null, lastLoc:null, gps:false, palette:'calm', lists:null};
 try { Object.assign(S, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch {}
 function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch {} }
+function ensureLists(){
+  S.lists = S.lists || {};
+  for (const k in DEFAULTS) {
+    const l = S.lists[k] = S.lists[k] || [];
+    for (const n of DEFAULTS[k]) if (!l.some(x => x.n===n)) l.push({n, hide:false, custom:false});
+  }
+  for (const e of S.entries) { e.pre = e.pre || []; e.symptoms = e.symptoms || []; e.triggers = e.triggers || []; }
+  if (!PALETTES[S.palette]) S.palette = 'calm';
+}
+ensureLists(); save();
 
 const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const sevColor = n => `hsl(${140 - (n-1)*15} 30% 33%)`;
+function colorFor(n, key){
+  const p = PALETTES[key || S.palette], t = (n-1)/9, m = i => p.a[i] + (p.b[i]-p.a[i])*t;
+  return `hsl(${m(0).toFixed(1)} ${m(1).toFixed(1)}% ${m(2).toFixed(1)}%)`;
+}
+const sevColor = n => colorFor(n);
+const stripHTML = key => Array.from({length:10},(_,i)=>`<span style="background:${colorFor(i+1,key)}"></span>`).join('');
 const fmtWhen = t => new Date(t).toLocaleString([], {weekday:'short', month:'short', day:'numeric', hour:'numeric', minute:'2-digit'});
 const toInput = t => t ? new Date(t - new Date(t).getTimezoneOffset()*6e4).toISOString().slice(0,16) : '';
 const fromInput = v => v ? new Date(v).getTime() : null;
+const dayKey = t => { const d = new Date(t); return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`; };
 
 /* ---------- weather ---------- */
 const SKY = c => c==null ? '' : c===0 ? 'Clear' : c<=2 ? 'Partly cloudy' : c===3 ? 'Overcast' : c<=48 ? 'Fog' : c<=57 ? 'Drizzle' :
@@ -258,7 +371,7 @@ async function fillMissing(){
   if (!navigator.onLine) return;
   let any = false;
   for (const e of S.entries.filter(e => !e.wx).slice(0,10)) any = await attachWeather(e) || any;
-  if (any) renderHistory();
+  if (any) refresh();
 }
 async function showNow(){
   const l = S.home || S.lastLoc;
@@ -272,7 +385,7 @@ async function showNow(){
 let lastId = null;
 const byId = id => S.entries.find(e => e.id===id);
 function newEntry(start, sev){
-  const e = {id:Date.now().toString(36), start, end:null, sev, symptoms:[], triggers:[], med:'', notes:'', loc:null, wx:null};
+  const e = {id:Date.now().toString(36), start, end:null, sev, pre:[], symptoms:[], triggers:[], med:'', notes:'', loc:null, wx:null};
   S.entries.push(e); save(); return e;
 }
 function showSaved(e, pending){
@@ -283,7 +396,9 @@ function showSaved(e, pending){
     'No weather yet. It fills in by itself once the phone is online and has a location.';
 }
 function closeSaved(){ lastId=null; $('#saved').classList.add('hide'); $('#ask').classList.remove('hide'); }
-$('#pad').innerHTML = Array.from({length:10},(_,i)=>`<button data-s="${i+1}" style="background:${sevColor(i+1)}" aria-label="Severity ${i+1}">${i+1}</button>`).join('');
+function renderPad(){
+  $('#pad').innerHTML = Array.from({length:10},(_,i)=>`<button data-s="${i+1}" style="background:${sevColor(i+1)}" aria-label="Severity ${i+1}">${i+1}</button>`).join('');
+}
 $('#pad').onclick = ev => {
   const b = ev.target.closest('button'); if (!b) return;
   const e = newEntry(Date.now(), +b.dataset.s); lastId = e.id;
@@ -298,35 +413,38 @@ $('#setupLoc').onclick = enableGps;
 async function enableGps(){
   const l = await gpsOnce();
   if (l) { S.gps = true; S.lastLoc = l; save(); fillMissing(); }
-  renderSetup(l ? '' : 'The phone did not share its location. Check that location is on and allowed for this page, or set a home town below.');
+  renderSettings(l ? '' : 'The phone did not share its location. Check that location is on and allowed for this page, or set a home town below.');
   showNow();
-  if (!l) location.hash = 'setup';
+  if (!l) location.hash = 'settings';
 }
 
 /* ---------- editor ---------- */
 let ed = null;
-function chips(el, all, picked){
-  el.innerHTML = all.map(x => `<button class="chip" aria-pressed="${picked.includes(x)}">${esc(x)}</button>`).join('');
+function chips(el, kind, picked){
+  // Shown items in list order, plus anything this entry already has (hidden, removed, or from an old backup).
+  const names = S.lists[kind].filter(x => !x.hide).map(x => x.n);
+  for (const p of picked) if (!names.includes(p)) names.push(p);
+  el.innerHTML = names.length ? names.map(x => `<button class="chip" aria-pressed="${picked.includes(x)}">${esc(x)}</button>`).join('')
+    : '<p class="small muted">All hidden. Turn some back on in Settings.</p>';
 }
-function openEditor(id){
+function openEditor(id, presetStart){
   const e = id ? byId(id) : null;
   ed = {id, sev: e ? e.sev : 5, wx: e ? e.wx : null, start0: e ? e.start : null};
   $('#sheetTitle').textContent = e ? 'Migraine details' : 'Log an earlier migraine';
-  $('#fStart').value = toInput(e ? e.start : Date.now());
+  $('#fStart').value = toInput(e ? e.start : presetStart || Date.now());
   $('#fEnd').value = toInput(e && e.end);
   $('#fSev').innerHTML = Array.from({length:10},(_,i)=>`<button data-s="${i+1}" style="background:${sevColor(i+1)}" aria-pressed="${i+1===ed.sev}" aria-label="Severity ${i+1}">${i+1}</button>`).join('');
-  chips($('#fSym'), SYMPTOMS, e ? e.symptoms : []);
-  chips($('#fTrig'), TRIGGERS, e ? e.triggers : []);
+  for (const k in KINDS) chips($('#f'+k[0].toUpperCase()+k.slice(1)), k, e ? e[KINDS[k].field] : []);
   $('#fMed').value = e ? e.med : ''; $('#fNotes').value = e ? e.notes : '';
   $('#fWx').textContent = ed.wx ? wxLine(ed.wx) : e ? 'Not saved yet.' : 'Saved when you tap Save.';
   $('#fWxGo').classList.toggle('hide', !e); $('#fDel').classList.toggle('hide', !e);
   $('#fDel').textContent = 'Delete this entry'; delete $('#fDel').dataset.sure;
   $('#sheet').classList.add('on'); $('#sheet').scrollTop = 0;
 }
-function closeEditor(){ $('#sheet').classList.remove('on'); ed = null; renderHistory(); }
+function closeEditor(){ $('#sheet').classList.remove('on'); ed = null; refresh(); }
 $('#fSev').onclick = ev => { const b = ev.target.closest('button'); if (!b) return; ed.sev = +b.dataset.s;
   $('#fSev').querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x===b)); };
-for (const id of ['#fSym','#fTrig']) $(id).onclick = ev => { const b = ev.target.closest('.chip'); if (b) b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')!=='true'); };
+for (const id of ['#fPre','#fSym','#fTrig']) $(id).onclick = ev => { const b = ev.target.closest('.chip'); if (b) b.setAttribute('aria-pressed', b.getAttribute('aria-pressed')!=='true'); };
 const picked = el => [...el.querySelectorAll('[aria-pressed=true]')].map(b => b.textContent);
 $('#fEndNow').onclick = () => { $('#fEnd').value = toInput(Date.now()); };
 $('#fCancel').onclick = closeEditor;
@@ -334,11 +452,11 @@ $('#fSave').onclick = () => {
   const start = fromInput($('#fStart').value) || Date.now();
   const e = ed.id ? byId(ed.id) : newEntry(start, ed.sev);
   const moved = ed.start0!=null && Math.abs(start-ed.start0) > 30*6e4;
-  Object.assign(e, {start, end:fromInput($('#fEnd').value), sev:ed.sev, symptoms:picked($('#fSym')), triggers:picked($('#fTrig')),
-    med:$('#fMed').value.trim(), notes:$('#fNotes').value.trim()});
+  Object.assign(e, {start, end:fromInput($('#fEnd').value), sev:ed.sev, pre:picked($('#fPre')), symptoms:picked($('#fSym')),
+    triggers:picked($('#fTrig')), med:$('#fMed').value.trim(), notes:$('#fNotes').value.trim()});
   if (moved) e.wx = null;
   save(); closeEditor();
-  if (!e.wx) attachWeather(e).then(renderHistory);
+  if (!e.wx) attachWeather(e).then(refresh);
 };
 $('#fWxGo').onclick = async () => {
   const e = byId(ed.id); if (!e) return;
@@ -348,13 +466,81 @@ $('#fWxGo').onclick = async () => {
   const ok = await attachWeather(probe);
   if (!ed || ed.id!==e.id) return;
   if (ok) { e.wx = probe.wx; e.loc = probe.loc; e.start = start; ed.start0 = start; save(); }
-  $('#fWx').textContent = ok ? wxLine(e.wx) : 'Could not get weather. Check the connection and that a location is set under Setup.';
+  $('#fWx').textContent = ok ? wxLine(e.wx) : 'Could not get weather. Check the connection and that a location is set under Settings.';
 };
 $('#fDel').onclick = () => {
   const b = $('#fDel');
   if (!b.dataset.sure) { b.dataset.sure = 1; b.textContent = 'Tap again to delete for good'; return; }
   S.entries = S.entries.filter(e => e.id!==ed.id); save(); closeEditor();
 };
+
+/* ---------- shared entry card ---------- */
+function entryHTML(e){
+  const dur = e.end && e.end>e.start ? ` · lasted ${((e.end-e.start)/36e5).toFixed(1).replace('.0','')} h` : '';
+  const tags = [...e.symptoms, ...e.triggers].join(', ');
+  return `<button class="entry" data-id="${e.id}"><span class="badge" style="background:${sevColor(e.sev)}">${e.sev}</span>
+    <span class="body"><span class="when num">${esc(fmtWhen(e.start))}${dur}</span>
+    <span class="small num ${e.wx?'':'muted'}">${e.wx ? esc(wxLine(e.wx)) : 'Weather not saved yet'}</span>
+    ${e.pre.length ? `<span class="small muted">Before: ${esc(e.pre.join(', '))}</span>` : ''}
+    ${tags ? `<span class="small muted">${esc(tags)}</span>` : ''}
+    ${e.med ? `<span class="small muted">Took: ${esc(e.med)}</span>` : ''}
+    ${e.notes ? `<span class="small note">${esc(e.notes)}</span>` : ''}</span></button>`;
+}
+const openFromList = ev => { const b = ev.target.closest('.entry'); if (b) openEditor(b.dataset.id); };
+
+/* ---------- calendar ---------- */
+const today0 = () => { const d = new Date(); d.setHours(0,0,0,0); return d; };
+let calMonth = (() => { const d = today0(); d.setDate(1); return d; })();
+let calSel = null; // Date at local midnight
+function renderCalendar(){
+  const y = calMonth.getFullYear(), m = calMonth.getMonth();
+  const byDay = {};
+  for (const e of S.entries) (byDay[dayKey(e.start)] = byDay[dayKey(e.start)] || []).push(e);
+  for (const k in byDay) byDay[k].sort((a,b) => a.start-b.start);
+  $('#calTitle').textContent = calMonth.toLocaleDateString([], {month:'long', year:'numeric'});
+  const t0 = today0();
+  $('#calNext').disabled = y===t0.getFullYear() && m===t0.getMonth();
+  const days = new Date(y, m+1, 0).getDate(), lead = new Date(y, m, 1).getDay();
+  let h = ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].map(d => `<div class="dow">${d[0]}</div>`).join('');
+  for (let i=0;i<lead;i++) h += '<div class="day blank"></div>';
+  for (let d=1; d<=days; d++){
+    const date = new Date(y, m, d), es = byDay[dayKey(date)] || [];
+    const cls = ['day']; if (+date===+t0) cls.push('today'); if (calSel && +date===+calSel) cls.push('sel');
+    const dots = es.slice(0,3).map(e => `<span class="dot" style="background:${sevColor(e.sev)}"></span>`).join('') +
+      (es.length>3 ? `<span class="more">+${es.length-3}</span>` : '');
+    const label = date.toLocaleDateString([], {month:'long', day:'numeric'}) + (es.length ? `, ${es.length} migraine${es.length>1?'s':''}` : '');
+    h += `<button class="${cls.join(' ')}" data-d="${d}" ${date>t0?'disabled':''} aria-label="${label}">${d}<span class="dots">${dots}</span></button>`;
+  }
+  $('#cal').innerHTML = h;
+  $('#calLegend').innerHTML = stripHTML();
+  const inMonth = S.entries.filter(e => { const d = new Date(e.start); return d.getFullYear()===y && d.getMonth()===m; });
+  $('#calSummary').textContent = inMonth.length
+    ? `${inMonth.length} migraine${inMonth.length>1?'s':''} on ${new Set(inMonth.map(e=>dayKey(e.start))).size} days this month · average severity ${(inMonth.reduce((s,e)=>s+e.sev,0)/inMonth.length).toFixed(1)}`
+    : 'No migraines logged this month.';
+  renderDayPanel(byDay);
+}
+function renderDayPanel(byDay){
+  const p = $('#dayPanel');
+  if (!calSel) { p.innerHTML = '<p class="muted small">Tap a day to see its migraines, or to log one on that day.</p>'; return; }
+  const es = byDay[dayKey(calSel)] || [];
+  const title = calSel.toLocaleDateString([], {weekday:'long', month:'long', day:'numeric'});
+  p.innerHTML = `<h2>${esc(title)}</h2>` +
+    (es.length ? `<div class="list">${es.map(entryHTML).join('')}</div>` : '<p class="muted">No migraines logged on this day.</p>') +
+    `<button class="btn" id="logOnDay">Log a migraine on this day</button>`;
+}
+$('#cal').onclick = ev => {
+  const b = ev.target.closest('.day[data-d]'); if (!b || b.disabled) return;
+  calSel = new Date(calMonth.getFullYear(), calMonth.getMonth(), +b.dataset.d);
+  const es = S.entries.filter(e => dayKey(e.start)===dayKey(calSel));
+  renderCalendar();
+  if (es.length===1) openEditor(es[0].id);
+};
+$('#dayPanel').onclick = ev => {
+  if (ev.target.closest('#logOnDay')) { const d = new Date(calSel); d.setHours(12); openEditor(null, +d); return; }
+  openFromList(ev);
+};
+$('#calPrev').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()-1, 1); calSel = null; renderCalendar(); };
+$('#calNext').onclick = () => { calMonth = new Date(calMonth.getFullYear(), calMonth.getMonth()+1, 1); calSel = null; renderCalendar(); };
 
 /* ---------- history ---------- */
 function renderHistory(){
@@ -369,28 +555,64 @@ function renderHistory(){
     ? `<p class="num">Falling before <strong>${fell}</strong>, rising before <strong>${rose}</strong>, steady before <strong>${w.length-fell-rose}</strong> of ${w.length} migraines.</p>
        <p class="small muted">Falling or rising means a change of more than ${fmtD(3)}.</p>`
     : `<p class="muted">This fills in once a few entries have weather saved.</p>`);
-  $('#list').innerHTML = es.length ? es.map(e => {
-    const dur = e.end && e.end>e.start ? ` · lasted ${((e.end-e.start)/36e5).toFixed(1).replace('.0','')} h` : '';
-    const tags = [...e.symptoms, ...e.triggers].join(', ');
-    return `<button class="entry" data-id="${e.id}"><span class="badge" style="background:${sevColor(e.sev)}">${e.sev}</span>
-      <span class="body"><span class="when num">${esc(fmtWhen(e.start))}${dur}</span>
-      <span class="small num ${e.wx?'':'muted'}">${e.wx ? esc(wxLine(e.wx)) : 'Weather not saved yet'}</span>
-      ${tags ? `<span class="small muted">${esc(tags)}</span>` : ''}
-      ${e.med ? `<span class="small muted">Took: ${esc(e.med)}</span>` : ''}
-      ${e.notes ? `<span class="small note">${esc(e.notes)}</span>` : ''}</span></button>`;
-  }).join('') : `<p class="muted">Nothing logged yet. Entries show up here, newest first. Tap one to add details.</p>`;
+  $('#list').innerHTML = es.length ? es.map(entryHTML).join('')
+    : `<p class="muted">Nothing logged yet. Entries show up here, newest first. Tap one to add details.</p>`;
 }
-$('#list').onclick = ev => { const b = ev.target.closest('.entry'); if (b) openEditor(b.dataset.id); };
+$('#list').onclick = openFromList;
 
-/* ---------- setup ---------- */
-function renderSetup(msg){
+/* ---------- settings ---------- */
+function renderSettings(msg){
   $('#locStatus').textContent = msg || (S.gps ? "Using this phone's location" + (S.home ? `, with ${S.home.name} as the fallback.` : '.')
     : S.home ? `Using ${S.home.name}.` : 'No location set yet, so weather cannot be saved.');
   $('#locBtn').textContent = S.gps ? "Stop using this phone's location" : "Use this phone's location";
   $('#units').querySelectorAll('.chip').forEach(b => b.setAttribute('aria-pressed', b.dataset.u===S.units));
+  $('#palettes').innerHTML = Object.entries(PALETTES).map(([k,p]) =>
+    `<button class="pal" data-p="${k}" aria-pressed="${k===S.palette}"><span class="name"><span>${p.name}</span>${k===S.palette?'<span class="check">In use</span>':''}</span><span class="strip">${stripHTML(k)}</span></button>`).join('');
+  $('#manageBtns').innerHTML = Object.entries(KINDS).map(([k,v]) => {
+    const l = S.lists[k], shown = l.filter(x => !x.hide).length;
+    return `<button class="btn navbtn" data-k="${k}"><span>${v.title}</span><span class="count">${shown} of ${l.length} ›</span></button>`;
+  }).join('');
 }
-$('#locBtn').onclick = () => { if (S.gps) { S.gps = false; save(); renderSetup(); showNow(); } else enableGps(); };
-$('#units').onclick = ev => { const b = ev.target.closest('.chip'); if (!b) return; S.units = b.dataset.u; save(); renderSetup(); renderHistory(); showNow(); };
+$('#palettes').onclick = ev => { const b = ev.target.closest('.pal'); if (!b) return; S.palette = b.dataset.p; save(); renderPad(); renderSettings(); };
+$('#manageBtns').onclick = ev => { const b = ev.target.closest('[data-k]'); if (b) openManage(b.dataset.k); };
+$('#locBtn').onclick = () => { if (S.gps) { S.gps = false; save(); renderSettings(); showNow(); } else enableGps(); };
+$('#units').onclick = ev => { const b = ev.target.closest('.chip'); if (!b) return; S.units = b.dataset.u; save(); renderSettings(); showNow(); };
+
+/* manage a picker list */
+let mk = null;
+function openManage(k){
+  mk = k; const v = KINDS[k];
+  $('#mTitle').textContent = v.title;
+  $('#mNewLabel').textContent = `Add your own ${v.one}`;
+  $('#mNew').value = ''; $('#mMsg').textContent = '';
+  renderManage();
+  $('#manage').classList.add('on'); $('#manage').scrollTop = 0;
+}
+function renderManage(){
+  $('#mList').innerHTML = S.lists[mk].map((x,i) => `<div class="mitem ${x.hide?'off':''}">
+    <span class="nm">${esc(x.n)}${x.custom?'<span class="tag">yours</span>':''}</span>
+    <button class="btn tog" data-i="${i}" data-a="tog" aria-pressed="${!x.hide}" aria-label="${esc(x.n)}: ${x.hide?'hidden, tap to show':'shown, tap to hide'}">${x.hide?'Hidden':'Shown'}</button>
+    ${x.custom ? `<button class="btn danger" data-i="${i}" data-a="del" aria-label="Remove ${esc(x.n)}">Remove</button>` : ''}
+  </div>`).join('');
+}
+$('#mList').onclick = ev => {
+  const b = ev.target.closest('[data-a]'); if (!b) return;
+  const l = S.lists[mk], i = +b.dataset.i;
+  if (b.dataset.a==='tog') l[i].hide = !l[i].hide;
+  else if (b.dataset.a==='del') { $('#mMsg').textContent = `Removed ${l[i].n}.`; l.splice(i,1); }
+  save(); renderManage();
+};
+function addItem(){
+  const n = $('#mNew').value.trim().replace(/\s+/g,' '); if (!n) return;
+  const l = S.lists[mk], have = l.find(x => x.n.toLowerCase()===n.toLowerCase());
+  if (have) { have.hide = false; $('#mMsg').textContent = `${have.n} is already on the list, and it is now shown.`; }
+  else { l.push({n, hide:false, custom:true}); $('#mMsg').textContent = `Added ${n}.`; }
+  $('#mNew').value = ''; save(); renderManage();
+}
+$('#mAdd').onclick = addItem;
+$('#mNew').onkeydown = ev => { if (ev.key==='Enter') addItem(); };
+$('#mDone').onclick = () => { $('#manage').classList.remove('on'); mk = null; renderSettings(); };
+
 async function townSearch(){
   const q = $('#town').value.trim(), out = $('#townResults'); if (!q) return;
   out.innerHTML = '<p class="muted small">Searching…</p>';
@@ -401,7 +623,7 @@ async function townSearch(){
       : '<p class="small">No town found with that name. Try a nearby larger city.</p>';
     out.onclick = ev => { const b = ev.target.closest('button'); if (!b) return; const r = rs[b.dataset.i];
       S.home = {lat:+r.latitude.toFixed(2), lon:+r.longitude.toFixed(2), name:[r.name,r.admin1].filter(Boolean).join(', ')};
-      save(); out.innerHTML = ''; $('#town').value = ''; renderSetup(); showNow(); fillMissing(); };
+      save(); out.innerHTML = ''; $('#town').value = ''; renderSettings(); showNow(); fillMissing(); };
   } catch { out.innerHTML = '<p class="small">Could not search. Check the internet connection and try again.</p>'; }
 }
 $('#townGo').onclick = townSearch;
@@ -416,10 +638,10 @@ const stamp = () => toInput(Date.now()).slice(0,10);
 $('#csv').onclick = () => {
   const q = v => `"${String(v ?? '').replace(/"/g,'""')}"`;
   const us = S.units==='us', pu = us ? 'inHg' : 'hPa', pc = h => h==null ? '' : us ? (h*0.02953).toFixed(2) : h;
-  const rows = [['Started','Ended','Hours','Severity','Symptoms','Triggers','Medicine','Notes',`Temp ${us?'F':'C'}`,'Humidity %',`Pressure ${pu}`,`Pressure change 24h ${pu}`,`Pressure change 3h ${pu}`,'Sky']];
+  const rows = [['Started','Ended','Hours','Severity','Pre-migraine symptoms','Symptoms','Triggers','Medicine','Notes',`Temp ${us?'F':'C'}`,'Humidity %',`Pressure ${pu}`,`Pressure change 24h ${pu}`,`Pressure change 3h ${pu}`,'Sky']];
   for (const e of [...S.entries].sort((a,b) => a.start-b.start)) { const w = e.wx || {};
     rows.push([toInput(e.start).replace('T',' '), toInput(e.end).replace('T',' '), e.end ? ((e.end-e.start)/36e5).toFixed(1) : '', e.sev,
-      e.symptoms.join('; '), e.triggers.join('; '), e.med, e.notes, w.t==null ? '' : us ? Math.round(w.t*9/5+32) : w.t, w.h, pc(w.p), pc(w.d24), pc(w.d3), SKY(w.code)]); }
+      e.pre.join('; '), e.symptoms.join('; '), e.triggers.join('; '), e.med, e.notes, w.t==null ? '' : us ? Math.round(w.t*9/5+32) : w.t, w.h, pc(w.p), pc(w.d24), pc(w.d3), SKY(w.code)]); }
   download(`migraine-log-${stamp()}.csv`, rows.map(r => r.map(q).join(',')).join('\r\n'), 'text/csv');
   $('#dataMsg').textContent = `Exported ${S.entries.length} entries.`;
 };
@@ -432,23 +654,34 @@ $('#restoreFile').onchange = async ev => {
     if (!Array.isArray(d.entries)) throw 0;
     const have = new Set(S.entries.map(e => e.id));
     const add = d.entries.filter(e => e && e.id && e.start && !have.has(e.id));
-    S.entries.push(...add); if (!S.home && d.home) S.home = d.home; save();
-    $('#dataMsg').textContent = `Added ${add.length} entries from the backup.`; renderHistory();
+    S.entries.push(...add); if (!S.home && d.home) S.home = d.home;
+    if (d.lists) for (const k in S.lists) for (const x of d.lists[k] || [])
+      if (x && x.n && !S.lists[k].some(y => y.n===x.n)) S.lists[k].push({n:x.n, hide:!!x.hide, custom:true});
+    ensureLists(); save();
+    $('#dataMsg').textContent = `Added ${add.length} entries from the backup.`; refresh();
   } catch { $('#dataMsg').textContent = 'That file is not a Migraine Log backup.'; }
   ev.target.value = '';
 };
 
 /* ---------- routing ---------- */
+const VIEWS = ['log','calendar','history','settings'];
+let view = 'log';
+function refresh(){
+  if (view==='history') renderHistory();
+  if (view==='calendar') renderCalendar();
+  if (view==='settings') renderSettings();
+}
 function route(){
-  const v = ['log','history','setup'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'log';
-  document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id==='v-'+v));
-  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.dataset.v===v));
-  if (v==='history') renderHistory(); if (v==='setup') renderSetup();
-  scrollTo(0,0);
+  let v = location.hash.slice(1);
+  if (v==='setup') v = 'settings';
+  view = VIEWS.includes(v) ? v : 'log';
+  document.querySelectorAll('.view').forEach(s => s.classList.toggle('on', s.id==='v-'+view));
+  document.querySelectorAll('nav a').forEach(a => a.classList.toggle('on', a.dataset.v===view));
+  refresh(); scrollTo(0,0);
 }
 addEventListener('hashchange', route);
 addEventListener('online', fillMissing);
-route(); showNow(); fillMissing();
+renderPad(); route(); showNow(); fillMissing();
 if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(()=>{});
 if ('serviceWorker' in navigator && location.protocol==='https:') navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
